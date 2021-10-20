@@ -310,6 +310,7 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("InitFunction: failed to read request body: %s\n", err)
+		http.Error(w, "unable to init function", http.StatusInternalServerError)
 		panic(err)
 	}
 	//convert the request body to a map
@@ -317,6 +318,7 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &requestBody)
 	if err != nil {
 		fmt.Printf("InitFunction: failed to read unmarshall json %s\n", err)
+		http.Error(w, "unable to init function", http.StatusInternalServerError)
 		panic(err)
 	}
 	//get the submission type from the request body.  Can be one of raw, git, file, archive
@@ -339,6 +341,7 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 		err = writeCodeFile(code, codeType)
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 		if codeType == "go" {
@@ -350,10 +353,11 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 			err := cmd.Run()
 			if err != nil {
 				println("InitCommand: Compiling go code: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 		}
-
+		w.WriteHeader(http.StatusOK)
 	//git submission type
 	case "git":
 		//clone the git repo
@@ -361,11 +365,13 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 		err = getGitRepo(gitRepo, "/app/")
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 		mainFileFullPath, mainPath, err := findFilePath(entryPointFileName)
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 		//set the env vars
@@ -385,13 +391,15 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 			cmd.Stderr = os.Stderr
 			err := cmd.Run()
 			if err != nil {
-				println("InitCommand: Compiling go code: " + err.Error())
+				println("InitCommand: Error compiling go code: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 			mainFileFullPath = "/app/main"
 			err = createSymLink(mainFileFullPath, "/app/main")
 			if err != nil {
 				println("InitCommand: Error creating symlink: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -399,9 +407,11 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 			err = createSymLink(mainFileFullPath, "/app/main."+codeType)
 			if err != nil {
 				println("InitCommand: Error creating symlink: \n" + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 		}
+		w.WriteHeader(http.StatusOK)
 	//file submission type
 	case "file":
 		//find the full path entry entryPointFileName starting in the /app/ directory and return it in the format /app/dir1/dir2/main.go
@@ -409,6 +419,7 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 		err = DownloadFile("/app/main."+codeType, downloadURL)
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 
@@ -421,9 +432,11 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 			err := cmd.Run()
 			if err != nil {
 				println("InitCommand: Compiling go code: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 		}
+		w.WriteHeader(http.StatusOK)
 	//archive submission type
 	case "archive":
 		println("InitFunction: Processing archive submission")
@@ -431,16 +444,19 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 		err = DownloadFile("/app/tmp.zip", downloadURL)
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 		_, err = Unzip("/app/tmp.zip", "/app")
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 		mainFileFullPath, mainPath, err := findFilePath(entryPointFileName)
 		if err != nil {
 			println("InitFunction: Exiting InitFunction due to Error")
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 		//set the env vars
@@ -461,11 +477,13 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 			err := cmd.Run()
 			if err != nil {
 				println("InitCommand: Compiling go code: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 			err = createSymLink(mainFileFullPath, "/app/main")
 			if err != nil {
 				println("InitCommand: Error creating symlink: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -473,19 +491,23 @@ func InitFunction(w http.ResponseWriter, r *http.Request) {
 			createSymLink(mainFileFullPath, "/app/main."+codeType)
 			if err != nil {
 				println("InitCommand: Error creating symlink: " + err.Error())
+				http.Error(w, "unable to init function", http.StatusInternalServerError)
 				return
 			}
 		}
+		w.WriteHeader(http.StatusOK)
 	//default case
 	default:
 		print("invalid submissionType: " + submissionType)
 		if err != nil {
 			println("InitCommand: Error: " + err.Error())
+			http.Error(w, "unable to init function", http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
+//TODO: Integrate pullDependencies
 func pullDependencies(codeType string, requirementsFile string, entryPath string) error {
 	fmt.Printf("PullDependencies for codeType %s, requirementsFile %s, entryPath %s", codeType, requirementsFile, entryPath)
 	switch codeType {

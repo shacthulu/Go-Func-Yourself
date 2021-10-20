@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -37,4 +39,29 @@ func testSkeleton(submission Submission, t *testing.T, origin string) {
 	}
 	defer resp.Body.Close()
 	fmt.Println(string(body))
+	//clean()
+}
+
+// TestClean cleans up all the files in the /app/ directory.
+func TestClean(t *testing.T) {
+	dir := "/app/"
+
+	//get the list of files and folders in the current directory
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	//iterate over the files and folders
+	for _, file := range files {
+		//if the file is a folder, remove it recursively
+		if file.IsDir() {
+			fmt.Println("Removing folder:", file.Name())
+			os.RemoveAll(filepath.Join(dir, file.Name()))
+		} else {
+			//if the file is a file, remove it
+			fmt.Println("Removing file:", file.Name())
+			os.Remove(filepath.Join(dir, file.Name()))
+		}
+	}
 }
