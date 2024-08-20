@@ -21,5 +21,5 @@ require (
 	golang.org/x/net v0.0.0-20211020060615-d418f374d309 // indirect
 	golang.org/x/sys v0.0.0-20211020174200-9d6173849985 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
