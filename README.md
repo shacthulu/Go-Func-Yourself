@@ -56,20 +56,7 @@ This flexible structure allows for handling various submission scenarios efficie
 
 ### Testing Suite
 
-The project includes a comprehensive test suite, demonstrating my commitment to code quality and test-driven development. Tests cover various submission types and edge cases, ensuring robust functionality.
-
-## Reflections
-
-This project showcases my ability to:
-
-- Design and implement complex systems
-- Work with containerization technologies
-- Handle diverse code submission formats
-- Implement language-agnostic processing
-- Develop RESTful APIs
-- Write comprehensive test suites
-
-While this project is no longer in active development, it represents a significant learning experience and demonstrates my skills in backend development, API design, and working with containerized applications.
+Thorough test suite covers submission types and edge cases, ensuring robust functionality.
 
 ## Note
 
