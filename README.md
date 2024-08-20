@@ -1,3 +1,6 @@
+> [!NOTE]
+> This repo has not been active since 2021.  Go hasn't changed much since so there is a lot of gold here for a developer solving this problem, but no more changes will be made to this repo.
+
 # Go Func Yourself Web3 Workload Deployer
 
 ## Project Overview
